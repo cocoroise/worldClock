@@ -28,15 +28,14 @@ function formatZero(number) {
 }
 
 // 保存localstorage
-function useLocalStorage(key, initValue) {
+function useLocalStorage(key, value) {
   try {
+    window.localStorage.setItem(key, JSON.stringify(value));
     const result = window.localStorage.getItem(key);
-    if (result) {
-      return JSON.parse(item);
-    } else {
-      window.localStorage.setItem(key, JSON.stringify(initValue));
-    }
-  } catch (err) {}
+    return JSON.parse(result);
+  } catch (err) {
+    console.log('userLocalStorage err-->', err);
+  }
 }
 
 export { getLocalTime, sleep, useLocalStorage };

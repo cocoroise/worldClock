@@ -5,7 +5,7 @@
     <div class="time-section">
       <clock-section
         v-for="(item, index) in timeList"
-        :key="index"
+        :key="`${item.name}-${index}`"
         :item="item"
         @close="handleClose(index)"
       ></clock-section>
@@ -17,9 +17,10 @@
 </template>
 
 <script>
-  import { reactive, toRefs, onMounted, onUnmounted } from 'vue';
+  import { reactive, toRefs, onMounted, onUnmounted, watch } from 'vue';
   import ClockSection from '../clockSection/index.vue';
   import AddClock from '../addClock/index.vue';
+
   import {
     getTime,
     findTimeZoneName,
@@ -27,25 +28,29 @@
     asyncTimeFromServer,
   } from './logic.js';
 
+  import { useLocalStorage } from '../../util';
+
   export default {
     components: { ClockSection, AddClock },
     setup() {
       const state = reactive({
         timeList: [
           {
-            name: '北京1',
+            name: '北京',
             date: '2021-09-12',
             time: '00:00:00',
-            timezone: 8,
+            timezone: '8',
           },
         ],
+        storageList: [{ name: '北京', timezone: 8 }],
         error: undefined,
-        secondTimer: null, // 秒更新
-        serverSyncTimer: null, // 服务器分钟级同步
+        secondTimer: null, // 秒更新timer
+        serverSyncTimer: null, // 服务器分钟级同步timer
       });
 
       onMounted(() => {
         initData();
+        startTime();
         setTimer();
       });
 
@@ -54,14 +59,33 @@
         clearInterval(state.serverSyncTimer);
       });
 
+      // 从storage里获取初始list
+      const initData = () => {
+        const result = useLocalStorage('time', state.storageList);
+        if (result) {
+          state.timeList = result;
+          startTime();
+        }
+      };
+
+      watch(
+        () => state.storageList,
+        (newVal) => {
+          initData();
+        },
+        { deep: true }
+      );
+
       // 初始化时间列表
-      const initData = async () => {
-        const initTime = state.timeList[0];
-        await getTime(initTime.timezone, state).then((res) => {
-          if (res) {
-            initTime.date = res.date;
-            initTime.time = res.time;
-          }
+      const startTime = async () => {
+        const initTime = state.timeList;
+        initTime.map((v) => {
+          getTime(v.timezone, state).then((res) => {
+            if (res) {
+              initTime.date = res.date;
+              initTime.time = res.time;
+            }
+          });
         });
       };
 
@@ -80,23 +104,24 @@
       const handleAdd = async (value = 0) => {
         await getTime(value, state).then((res) => {
           if (res) {
-            state.timeList.push({
+            let obj = {
               name: findTimeZoneName(value),
+              timezone: value,
+            };
+            state.timeList.push({
+              ...obj,
               date: res.date,
               time: res.time,
-              timezone: value,
             });
+            state.storageList.push(obj);
           }
         });
       };
 
       // 删除一个时区
       const handleClose = (delIndex) => {
-        let list = state.timeList.slice(0);
-        list.splice(delIndex, 1);
-        state.timeList = list;
-        // state.timeList.splice(delIndex, 1);
-        console.log('delete', list);
+        state.timeList.splice(delIndex, 1);
+        state.storageList.splice(delIndex, 1);
       };
 
       return {

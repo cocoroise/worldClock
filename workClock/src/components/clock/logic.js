@@ -2,6 +2,7 @@ import { syncTime } from '../../api/getTime';
 import { timeMap } from '../../common/config/timeMap.js';
 import { getLocalTime } from '../../util';
 
+// 从服务器获取时间
 const getTime = async (timezone = 0, state) => {
   return await syncTime(timezone)
     .then((res) => {
@@ -13,6 +14,7 @@ const getTime = async (timezone = 0, state) => {
     });
 };
 
+// 查找对应时区的名称
 const findTimeZoneName = (timezone = 0) => {
   let res = undefined;
   timeMap.map((v) => {
@@ -33,10 +35,11 @@ const autoSyncTime = (state) => {
   });
 };
 
+// 从服务器更新时间 1min
 const asyncTimeFromServer = (state) => {
   const { timeList } = state;
   console.log('======开始同步服务器时间======');
-  
+
   timeList.forEach(async (item) => {
     let temp = await getTime(item.timezone, state);
     if (temp) {
