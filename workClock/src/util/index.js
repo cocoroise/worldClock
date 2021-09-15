@@ -27,15 +27,4 @@ function formatZero(number) {
   return number;
 }
 
-// 保存localstorage
-function useLocalStorage(key, value) {
-  try {
-    window.localStorage.setItem(key, JSON.stringify(value));
-    const result = window.localStorage.getItem(key);
-    return JSON.parse(result);
-  } catch (err) {
-    console.log('userLocalStorage err-->', err);
-  }
-}
-
-export { getLocalTime, sleep, useLocalStorage };
+export { getLocalTime, sleep };

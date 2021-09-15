@@ -17,7 +17,7 @@
 </template>
 
 <script>
-  import { reactive, toRefs, onMounted, onUnmounted, watch } from 'vue';
+  import { reactive, toRefs, onMounted, onUnmounted } from 'vue';
   import ClockSection from '../clockSection/index.vue';
   import AddClock from '../addClock/index.vue';
 
@@ -26,30 +26,23 @@
     findTimeZoneName,
     autoSyncTime,
     asyncTimeFromServer,
+    useStorage
   } from './logic.js';
 
-  import { useLocalStorage } from '../../util';
 
   export default {
     components: { ClockSection, AddClock },
     setup() {
       const state = reactive({
-        timeList: [
-          {
-            name: '北京',
-            date: '2021-09-12',
-            time: '00:00:00',
-            timezone: '8',
-          },
-        ],
-        storageList: [{ name: '北京', timezone: 8 }],
+        timeList: [],
         error: undefined,
         secondTimer: null, // 秒更新timer
         serverSyncTimer: null, // 服务器分钟级同步timer
       });
 
+      const storageList = useStorage('timeZone',[{ name: '北京', timezone: '8' }]);
+
       onMounted(() => {
-        initData();
         startTime();
         setTimer();
       });
@@ -59,31 +52,16 @@
         clearInterval(state.serverSyncTimer);
       });
 
-      // 从storage里获取初始list
-      const initData = () => {
-        const result = useLocalStorage('time', state.storageList);
-        if (result) {
-          state.timeList = result;
-          startTime();
-        }
-      };
-
-      watch(
-        () => state.storageList,
-        (newVal) => {
-          initData();
-        },
-        { deep: true }
-      );
-
       // 初始化时间列表
       const startTime = async () => {
-        const initTime = state.timeList;
-        initTime.map((v) => {
-          getTime(v.timezone, state).then((res) => {
+        storageList.map(async (v) => {
+          await getTime(v.timezone, state).then((res) => {
             if (res) {
-              initTime.date = res.date;
-              initTime.time = res.time;
+              state.timeList.push({
+                ...v,
+                date:res.date,
+                time:res.time
+              })
             }
           });
         });
@@ -108,12 +86,14 @@
               name: findTimeZoneName(value),
               timezone: value,
             };
+
+            storageList.push(obj);
+
             state.timeList.push({
               ...obj,
               date: res.date,
               time: res.time,
             });
-            state.storageList.push(obj);
           }
         });
       };
@@ -121,7 +101,7 @@
       // 删除一个时区
       const handleClose = (delIndex) => {
         state.timeList.splice(delIndex, 1);
-        state.storageList.splice(delIndex, 1);
+        storageList.splice(delIndex, 1);
       };
 
       return {

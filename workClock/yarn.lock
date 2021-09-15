@@ -272,6 +272,11 @@
     "@types/mime" "^1"
     "@types/node" "*"
 
+"@vitejs/plugin-vue@^1.6.2":
+  version "1.6.2"
+  resolved "https://registry.nlark.com/@vitejs/plugin-vue/download/@vitejs/plugin-vue-1.6.2.tgz?cache=0&sync_timestamp=1631112343140&other_urls=https%3A%2F%2Fregistry.nlark.com%2F%40vitejs%2Fplugin-vue%2Fdownload%2F%40vitejs%2Fplugin-vue-1.6.2.tgz#40dfe314cff610d4dd027a0b4ea2a93a257f3fc9"
+  integrity sha1-QN/jFM/2ENTdAnoLTqKpOiV/P8k=
+
 "@vue/compiler-core@3.2.11":
   version "3.2.11"
   resolved "https://registry.nlark.com/@vue/compiler-core/download/@vue/compiler-core-3.2.11.tgz?cache=0&sync_timestamp=1631141963549&other_urls=https%3A%2F%2Fregistry.nlark.com%2F%40vue%2Fcompiler-core%2Fdownload%2F%40vue%2Fcompiler-core-3.2.11.tgz#10af3777dba303ee7aae668029f131cb90391bee"
